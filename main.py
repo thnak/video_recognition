@@ -14,7 +14,7 @@ def run(**kwargs):
     weight = Path(kwargs["weight"])
     src = Path(kwargs["src"])
     webcam = kwargs["webcam"]
-    if webcam == -1:
+    if webcam <= -1:
         webcam = None
 
     assert weight.exists(), f"weight not found, your {weight.as_posix()}"

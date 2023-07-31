@@ -54,4 +54,4 @@ class Model:
         else:
             if isinstance(inputs, np.ndarray):
                 inputs = torch.from_numpy(inputs)
-            return self.runer(inputs)
+            return self.runer(inputs)[0]
