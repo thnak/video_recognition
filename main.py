@@ -34,7 +34,9 @@ def run(**kwargs):
     b, c, n, h, w = model.imgsz
 
     data = LoadDataset(src.as_posix(),
-                       cam_idx=webcam, outputShape=(w, h), numFrame=n)
+                       cam_idx=webcam,
+                       outputShape=(w, h),
+                       numFrame=n)
     data.mean = model.mean
     data.std = model.std
 
@@ -54,9 +56,13 @@ def run(**kwargs):
             pred = model(frames)
             t1 = time() - t0
             frames = []
-            val, inx = torch.topk(pred, dim=-1, k=1)
-            val = val.detach().numpy().round(3)
-            label = f"{id_to_classname[int(inx)]} {val}"
+
+            val, idx = torch.topk(pred, dim=-1, k=kwargs["top_k"])
+            label = ""
+            for val_, idx_ in zip(val, idx):
+                val_ = val_.detach().numpy()
+                val_ = round(float(val_), 3)
+                label += f"{id_to_classname[int(idx_)]} {val_}\n"
         frame0 = plot(frame0, label)
         cv2.namedWindow("a", cv2.WINDOW_NORMAL)
         cv2.imshow("a", frame0)
@@ -65,11 +71,12 @@ def run(**kwargs):
 
 
 if __name__ == '__main__':
-    parser = argparse.ArgumentParser(description="Video regnition with 3D CNN")
+    parser = argparse.ArgumentParser(description="Video recognition with 3D CNN")
     parser.add_argument("--weight", default="", type=str, help="model weight")
     parser.add_argument("--src", default="", type=str, help="video source directory")
     parser.add_argument("--json_classes", default="class_name.json", type=str, help="json name map (optional)")
     parser.add_argument("--webcam", default=-1, type=int, help="use webcam (idx>=0)")
+    parser.add_argument('--top_k', default=1, type=int, help="max classes in the predict result")
     opt = parser.parse_args()
 
     if all([len(opt.weight), len(opt.src)]):
